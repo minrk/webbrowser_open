@@ -1,4 +1,2 @@
-import webbrowser_open
-
-def test_pass():
-    pass
+def test_import():
+    import webbrowser_open  # noqa

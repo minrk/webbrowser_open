@@ -37,7 +37,6 @@ jobs:
           name: dist-${{ github.sha }}
           path: "dist/*"
           if-no-files-found: error
-
   upload-pypi:
     permissions:
       id-token: write
