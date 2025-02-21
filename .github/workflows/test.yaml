@@ -39,6 +39,11 @@ jobs:
         run: |
           pip install ".[test]"
           pip list
+      - name: Linux setup
+        if: ${{ contains(matrix.runs-on, 'ubuntu') }}
+        # install gtk-launch, xdg-settings, and a browser
+        run: |
+          sudo apt-get -y install libgtk-3-bin xdg-utils firefox
       - name: Linux pre-check
         if: ${{ contains(matrix.runs-on, 'ubuntu') }}
         continue-on-error: true
