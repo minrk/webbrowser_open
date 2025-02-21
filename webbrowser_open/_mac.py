@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import ctypes.util
-import subprocess
 import sys
 from ctypes import c_char_p, c_ulong, c_void_p
 from typing import TYPE_CHECKING, cast, overload
+from webbrowser import MacOSXOSAScript
 
 if TYPE_CHECKING:
     from ctypes import _SimpleCData
@@ -95,14 +95,8 @@ def get_default_browser() -> str | None:
     return app_path.decode(sys.getfilesystemencoding())
 
 
-def open_with_browser(url: str, browser: str) -> None:
-    """Open a url with a specific browser"""
-    url = url.replace('"', "%22")
-    browser = browser.replace('"', "%22")
-    script = f"""
-       tell application "{browser}"
-           activate
-           open location "{url}"
-       end
-    """
-    subprocess.run(["osascript"], input=script.encode())
+def make_opener() -> MacOSXOSAScript | None:
+    browser = get_default_browser()
+    if browser is None:
+        return None
+    return MacOSXOSAScript(browser)
