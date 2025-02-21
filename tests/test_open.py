@@ -14,14 +14,13 @@ _linux = platform.system() == "Linux"
 
 
 @pytest.fixture(autouse=True)
-def unregister():
-    # unregister our handler
-    # webbrowser has no public API for this
-    name = "system-default"
-    webbrowser._browsers.pop(name, None)
-    if webbrowser._tryorder and name in webbrowser._tryorder:
-        webbrowser._tryorder.remove(name)
+def reset():
     webbrowser_open._opener = None
+    # reset the state of the webbrowser module
+    # webbrowser has no public API for this
+    # but it's stdlib, so hopefully stable enough for testing purposes
+    webbrowser._browsers.clear()
+    webbrowser._tryorder = None
 
 
 def test_default_browser():
