@@ -70,7 +70,9 @@ select = [
   "I",  # isort
   "UP", # pyupgrade
   "F",  # flake8
+  "FA",
 ]
+extend-safe-fixes = ["FA"]
 
 # tbump for tagging releases
 [tool.tbump]

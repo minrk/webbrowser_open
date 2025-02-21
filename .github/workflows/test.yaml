@@ -39,6 +39,20 @@ jobs:
         run: |
           pip install ".[test]"
           pip list
+      - name: Linux setup
+        if: ${{ contains(matrix.runs-on, 'ubuntu') }}
+        # install gtk-launch, xdg-settings
+        run: |
+          sudo apt-get -y install libgtk-3-bin xdg-utils
+      - name: Linux pre-check
+        if: ${{ contains(matrix.runs-on, 'ubuntu') }}
+        continue-on-error: true
+        run: |
+          which gio
+          which gtk-launch
+          which xdg-settings
+          which xdg-mime
+          xdg-settings get default-web-browser
       - name: Run tests
         run: |
           pytest

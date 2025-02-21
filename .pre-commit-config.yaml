@@ -18,6 +18,7 @@ repos:
       - id: mdformat
         additional_dependencies:
           - mdformat-black
+          - mdformat-tables
   # format yaml
   - repo: https://github.com/google/yamlfmt
     rev: v0.16.0

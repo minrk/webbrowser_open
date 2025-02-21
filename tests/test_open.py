@@ -14,31 +14,32 @@ _linux = platform.system() == "Linux"
 
 
 @pytest.fixture(autouse=True)
-def unregister():
-    # unregister our handler
+def reset():
+    webbrowser_open._opener = None
+    # reset the state of the webbrowser module
     # webbrowser has no public API for this
-    name = "system-default"
-    webbrowser._browsers.pop(name, None)
-    if webbrowser._tryorder and name in webbrowser._tryorder:
-        webbrowser._tryorder.remove(name)
+    # but it's stdlib, so hopefully stable enough for testing purposes
+    webbrowser._browsers.clear()
+    webbrowser._tryorder = None
 
 
 def test_default_browser():
     browser = webbrowser_open.get_default_browser()
-    if _linux:
-        assert browser is None
-        return
     assert browser is not None
-    assert Path(shlex.split(browser)[0]).exists()
+    if _linux:
+        from webbrowser_open._linux import locate_desktop
+
+        browser_path = locate_desktop(browser)
+        assert browser_path is not None
+    else:
+        browser_path = shlex.split(browser)[0]
+    assert Path(browser_path).exists()
     if sys.platform == "win32":
         assert "%1" in browser
 
 
 def test_register():
     opener = webbrowser_open.register()
-    if _linux:
-        assert opener is None
-        return
     assert opener is not None
     assert webbrowser.get() is opener
 
@@ -46,12 +47,7 @@ def test_register():
 def test_register_browser_env():
     with mock.patch.dict(os.environ, {"BROWSER": "bash -c 'echo %s'"}):
         opener = webbrowser_open.register()
-    if _linux:
-        assert opener is None
-        return
     assert opener is not None
-    print(webbrowser._browsers)
-    print(webbrowser._tryorder)
     assert webbrowser.get() is not opener
 
 
@@ -71,17 +67,10 @@ def mock_opener():
 
 def test_open(mock_opener):
     webbrowser_open.open("https://example.org")
-    if _linux:
-        return
-    mock_opener.assert_called_once_with(
-        "https://example.org",
-    )
+    mock_opener.assert_called_once_with("https://example.org")
 
 
 def test_register_open(mock_opener):
-    opener = webbrowser_open.register()
-    if _linux:
-        assert opener is None
-        return
+    webbrowser_open.register()
     webbrowser.open("https://example.org")
     mock_opener.assert_called_once_with("https://example.org", 0, True)
