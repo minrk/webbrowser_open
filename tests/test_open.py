@@ -26,7 +26,14 @@ def reset():
 def test_default_browser():
     browser = webbrowser_open.get_default_browser()
     assert browser is not None
-    assert Path(shlex.split(browser)[0]).exists()
+    if _linux:
+        from webbrowser_open._linux import locate_desktop
+
+        browser_path = locate_desktop(browser)
+        assert browser_path is not None
+    else:
+        browser_path = shlex.split(browser)[0]
+    assert Path(browser_path).exists()
     if sys.platform == "win32":
         assert "%1" in browser
 
