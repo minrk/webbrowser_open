@@ -47,6 +47,15 @@ readme = { file = "README.md", content-type = "text/markdown" }
 # only the file-finder
 fallback_version = "0.0.0"
 
+[tool.mypy]
+warn_return_any = true
+warn_unused_configs = true
+warn_unreachable = true
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
 
 [tool.pytest.ini_options]
 addopts = "--verbose --color=yes --durations=10"
