@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import shlex
 import sys
-from subprocess import Popen
+from webbrowser import GenericBrowser
 
 assert sys.platform == "win32"  # for mypy
 
@@ -45,23 +45,10 @@ def get_default_browser() -> str | None:
     return browser_cmd
 
 
-def open_with_browser(url: str, browser: str) -> None:
-    """Launch a URL with the given browser
-
-    'browser' should be the launch command for the browser app.
-    it should have '%1' somewhere for input arguments.
-    """
-    browser_cmd = shlex.split(browser)
-    inserted = False
-    for i, field in enumerate(browser_cmd):
-        if "%1" in field:
-            browser_cmd[i] = field.replace("%1", url)
-            inserted = True
-    if not inserted:
-        # no %1, append arg
-        # is this right?
-        browser_cmd.append(url)
-    p = Popen(browser_cmd)
-    status = p.poll()
-    if status is not None:
-        raise RuntimeError(f"{browser_cmd} exited with [status={status}]")
+def make_opener() -> GenericBrowser | None:
+    browser = get_default_browser()
+    if browser is None:
+        return None
+    # Windows uses %1, webbrowser uses %s
+    browser = browser.replace("%1", "%s")
+    return GenericBrowser(shlex.split(browser))

@@ -17,7 +17,7 @@ _linux = platform.system() == "Linux"
 def unregister():
     # unregister our handler
     # webbrowser has no public API for this
-    name = webbrowser_open._DefaultBrowserOpener.name
+    name = "system-default"
     webbrowser._browsers.pop(name, None)
     if webbrowser._tryorder and name in webbrowser._tryorder:
         webbrowser._tryorder.remove(name)
@@ -56,31 +56,32 @@ def test_register_browser_env():
 
 
 @pytest.fixture
-def mock_open_with_browser():
-    if _linux:
+def mock_opener():
+    if webbrowser_open._backend is None:
         yield None
-    else:
-        with mock.patch.object(
-            webbrowser_open._backend, "open_with_browser", return_value=True
-        ) as method:
-            yield method
+
+    opener = webbrowser_open._backend.make_opener()
+    with (
+        mock.patch("webbrowser_open._opener", opener),
+        mock.patch.object(opener, "open", return_value=True) as open_method,
+    ):
+        assert webbrowser_open._opener is opener
+        yield open_method
 
 
-def test_open(mock_open_with_browser):
+def test_open(mock_opener):
     webbrowser_open.open("https://example.org")
     if _linux:
         return
-    mock_open_with_browser.assert_called_once_with(
-        "https://example.org", webbrowser_open.get_default_browser()
+    mock_opener.assert_called_once_with(
+        "https://example.org",
     )
 
 
-def test_register_open(mock_open_with_browser):
+def test_register_open(mock_opener):
     opener = webbrowser_open.register()
     if _linux:
         assert opener is None
         return
     webbrowser.open("https://example.org")
-    mock_open_with_browser.assert_called_once_with(
-        "https://example.org", webbrowser_open.get_default_browser()
-    )
+    mock_opener.assert_called_once_with("https://example.org", 0, True)
