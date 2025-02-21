@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import shlex
 import sys
-from subprocess import run
+from subprocess import Popen
 
 assert sys.platform == "win32"  # for mypy
 
@@ -59,4 +61,7 @@ def open_with_browser(url: str, browser: str) -> None:
         # no %1, append arg
         # is this right?
         browser_cmd.append(url)
-    run(browser_cmd, shell=True)
+    p = Popen(browser_cmd)
+    status = p.poll()
+    if status is not None:
+        raise RuntimeError(f"{browser_cmd} exited with [status={status}]")
