@@ -22,6 +22,14 @@ import webbrowser_open
 webbrowser_open.open(url)
 ```
 
+You can also launch a URL with
+
+```
+python3 -m webbrowser_open URL
+```
+
+to see the difference (if any) in your environment.
+
 The only difference in behavior is that `webbrowser_open` looks up the default browser application before opening the URL.
 This should only result in a change in behavior for opening `file://` URLs
 where the default application associated with the file type is used instead of the default browser.

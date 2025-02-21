@@ -77,7 +77,7 @@ def register(preferred: bool | None = None) -> webbrowser.BaseBrowser | None:
 
 def open(url: str) -> None:
     """Open a URL with the default browser"""
-    if _backend is None:
+    if _backend is None or os.environ.get("BROWSER"):
         webbrowser.open(url)
         return
 
