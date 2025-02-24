@@ -4,7 +4,7 @@ import os
 import shlex
 import subprocess
 import sys
-from webbrowser import GenericBrowser
+from webbrowser import BaseBrowser
 
 assert sys.platform == "win32"  # for mypy
 
@@ -29,7 +29,7 @@ def get_default_browser() -> str | None:
     return browser_cmd
 
 
-class WindowsDefault(GenericBrowser):
+class WindowsDefault(BaseBrowser):
     @staticmethod
     def _registry_lookup(
         root_key: str, sub_key: str, value_name: str = ""
@@ -92,8 +92,8 @@ class WindowsDefault(GenericBrowser):
             return True
 
 
-def make_opener() -> GenericBrowser | None:
+def make_opener() -> WindowsDefault | None:
     browser = get_default_browser()
     if browser is None:
         return None
-    return WindowsDefault("default-app")
+    return WindowsDefault()
