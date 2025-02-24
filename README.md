@@ -39,19 +39,19 @@ in which case `webbrowser_open.open` just wraps a call to `webbrowser.open` with
 
 This package uses the following APIs to explicitly launch the default browser:
 
-| platform | API                                                                                                                                         | notes                                                                                                                                                                                                                |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| mac      | [URLForApplicationToOpenURL](<https://developer.apple.com/documentation/appkit/nsworkspace/urlforapplication(toopen:)-7qkzf?language=objc>) | requires ctypes and access to libobjc. This is the mac equivalent to the [ios implementation in Python 3.13](https://github.com/python/cpython/blob/5d66c55c8ad0a0aeff8d06021ddca1d02c5f4416/Lib/webbrowser.py#L627) |
-| Windows  | HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\https\\UserChoice                                    | I don't yet know which cases this might not work for (UWP, minumum Windows versions, etc.), but it works in my own limited tests                                                                                     |
-| linux    | `xdg-settings get default-webbrowser` or `xdg-mime query default x-scheme-handler/https` plus `gtk-launch` or `gio launch`                  | `gtk-launch` appears to locate .deskop files correctly, while `gio launch` only appears to accept absolute paths. I'm not sure how many different ways there are to lookup and/or launch default browsers on linux.  |
+| platform | API                                                                                                                                         | notes                                                                                                                                                                                                               |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| mac      | [URLForApplicationToOpenURL](<https://developer.apple.com/documentation/appkit/nsworkspace/urlforapplication(toopen:)-7qkzf?language=objc>) | implemented via applescript                                                                                                                                                                                         |
+| Windows  | HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\https\\UserChoice                                    | I don't yet know which cases this might not work for (UWP, minumum Windows versions, etc.), but it works in my own limited tests                                                                                    |
+| linux    | `xdg-settings get default-webbrowser` or `xdg-mime query default x-scheme-handler/https` plus `gtk-launch` or `gio launch`                  | `gtk-launch` appears to locate .deskop files correctly, while `gio launch` only appears to accept absolute paths. I'm not sure how many different ways there are to lookup and/or launch default browsers on linux. |
 
 ## Background
 
 Most platforms have at least a semi-standard way to open URLs and discover the default browser.
 
 `webbrowser.open` uses generic not-browser-specific APIs (e.g. `open`, `xdg-open`, `os.startfile`), which works fine with `http[s]` URLs.
-However, all of these systems associate `file://` URLs with the default application for the file type, _not necessary_ a webbrowser, which `webbrowser.open` is meant to launch.
-The result is often `webbrowser.open` launching a file editor instead of a browser.
+However, all of these systems associate `file://` URLs with the default application for the file type, _not necessarily_ a webbrowser, which `webbrowser.open` is meant to launch.
+The result is often `webbrowser.open("file:///path/to/page.html")` launching a file editor instead of a browser.
 
 `webbrowser.open` does not work reliably with `file://` URLs on any platform, though it _may_ if the default application for HTML files is a browser,
 which it often is, except for developers.

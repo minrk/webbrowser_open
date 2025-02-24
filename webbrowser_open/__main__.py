@@ -13,9 +13,9 @@ def main() -> None:
     browser = webbrowser_open.get_default_browser()
     stdlib_default = webbrowser.get()
     # not all stdlibs have .name (at least on Python 3.9, they seem to on 3.13)
-    stdlib_name = getattr(
-        stdlib_default, "name", getattr(stdlib_default, "_name", str(stdlib_default))
-    )
+    stdlib_name = getattr(stdlib_default, "name", None)
+    if stdlib_name is None:
+        stdlib_name = getattr(stdlib_default, "_name", str(stdlib_default))
     print(f"Stdlib found default: {stdlib_name}", file=sys.stderr)
     if browser:
         print(f"Found default browser: {browser}", file=sys.stderr)

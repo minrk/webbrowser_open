@@ -32,12 +32,6 @@ def get_default_browser() -> str | None:
 
     Returns None if not found
     """
-    # only works if we have gtk-launch and can lookup the default browser
-    if shutil.which("gtk-launch") is None or shutil.which("gio") is None:
-        return None
-    if shutil.which("xdg-settings") is None and shutil.which("xdg-mime") is None:
-        return None
-
     # first, lookup the browser
     browser: str | None = None
     if shutil.which("xdg-settings"):
@@ -55,22 +49,7 @@ def get_default_browser() -> str | None:
         except (CalledProcessError, OSError):
             pass
 
-    if browser is None:
-        return None
-
-    # next, lookup the launcher
-    # gtk-launch is best because it searches paths correctly
-    if shutil.which("gtk-launch"):
-        return browser
-    elif shutil.which("gio"):
-        # `gio launch` also works, but doesn't search paths, it needs an absolute path
-        # only accept this if our search finds it;
-        # I'm not sure our search is 100% correct on all systems,
-        # but at least it should follow XDG spec
-        desktop_path = locate_desktop(browser)
-        if desktop_path:
-            return desktop_path
-    return None
+    return browser
 
 
 def make_opener() -> BackgroundBrowser | None:
@@ -80,5 +59,10 @@ def make_opener() -> BackgroundBrowser | None:
     if shutil.which("gtk-launch"):
         cmd = ["gtk-launch", browser]
     elif shutil.which("gio"):
+        browser = locate_desktop(browser)
+        if browser is None:
+            return None
         cmd = ["gio", "launch", browser]
+    else:
+        return None
     return BackgroundBrowser(cmd)
