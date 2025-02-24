@@ -36,7 +36,7 @@ def get_default_browser() -> str | None:
     if browser_id is None:
         return None
     browser_cmd = _registry_lookup(
-        winreg.HKEY_CLASSES_ROOT, browser_id + r"\shell\open\command"
+        winreg.HKEY_CLASSES_ROOT, rf"{browser_id}\shell\open\command"
     )
     return browser_cmd
 
@@ -66,7 +66,7 @@ class WindowsDefault(BaseBrowser):
         # e.g. '"C:\\Program Files\\Mozilla Firefox\\firefox.exe" -osint -url "%1"'
         with winreg.OpenKey(
             winreg.HKEY_CLASSES_ROOT,
-            browser_id + r"\shell\open\command",
+            rf"{browser_id}\shell\open\command",
         ) as key:
             browser_cmd = winreg.QueryValueEx(key, "")[0]
         if "%1" not in browser_cmd:
