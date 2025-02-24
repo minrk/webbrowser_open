@@ -40,8 +40,8 @@ class MacOSXOSAScript(BaseBrowser):
         sys.audit("webbrowser.open", url)
         url = url.replace('"', "%22")
         if self.name == "default":
-            proto, sep, rest = url.partition(":")
-            if proto.lower() in {"http", "https"}:
+            proto, _sep, _rest = url.partition(":")
+            if _sep and proto.lower() in {"http", "https"}:
                 script = f'open location "{url}"'
             else:
                 # if not a web URL, need to lookup default browser to ensure a browser is launched
