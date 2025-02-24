@@ -43,15 +43,27 @@ def get_default_browser() -> str | None:
 
 class WindowsDefault(BaseBrowser):
     def _open_default_browser(self, url):
+        """Open a URL with the default browser
+
+        launches the web browser no matter what `url` is,
+        unlike startfile.
+
+        Raises OSError if registry lookups fail.
+        Returns False if URL not opened.
+        """
         try:
             import winreg
         except ImportError:
             return False
+        # lookup progId for https URLs
+        # e.g. 'FirefoxURL-abc123'
         with winreg.OpenKey(
             winreg.HKEY_CURRENT_USER,
             r"Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice",
         ) as key:
             browser_id = winreg.QueryValueEx(key, "ProgId")[0]
+        # lookup launch command-line
+        # e.g. '"C:\\Program Files\\Mozilla Firefox\\firefox.exe" -osint -url "%1"'
         with winreg.OpenKey(
             winreg.HKEY_CLASSES_ROOT,
             browser_id + r"\shell\open\command",
@@ -72,14 +84,16 @@ class WindowsDefault(BaseBrowser):
     def open(self, url, new=0, autoraise=True):
         sys.audit("webbrowser.open", url)
 
-        opened = False
-        try:
-            opened = self._open_winreg(url)
-        except OSError:
-            # failed to lookup registry items
-            pass
-        if opened:
-            return opened
+        proto, _sep, _rest = url.partition(":")
+        if proto.lower() not in {"http", "https"}:
+            # need to lookup browser if it's not a web URL
+            try:
+                opened = self._open_default_browser(url)
+            except OSError:
+                # failed to lookup registry items
+                opened = False
+            if opened:
+                return opened
 
         # fallback: os.startfile; identical to 3.13
         try:
