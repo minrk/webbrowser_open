@@ -96,4 +96,4 @@ def make_opener() -> GenericBrowser | None:
     browser = get_default_browser()
     if browser is None:
         return None
-    return WindowsDefault()
+    return WindowsDefault("default-app")
