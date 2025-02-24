@@ -63,4 +63,6 @@ def make_opener() -> BackgroundBrowser | None:
         if browser is None:
             return None
         cmd = ["gio", "launch", browser]
+    else:
+        return None
     return BackgroundBrowser(cmd)
