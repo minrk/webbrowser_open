@@ -59,18 +59,34 @@ def mock_opener():
     opener = webbrowser_open._backend.make_opener()
     with (
         mock.patch("webbrowser_open._opener", opener),
-        mock.patch.object(opener, "open", return_value=True) as open_method,
+        mock.patch.object(opener, "open", return_value=True),
     ):
         assert webbrowser_open._opener is opener
-        yield open_method
+        yield opener
 
 
 def test_open(mock_opener):
     webbrowser_open.open("https://example.org")
-    mock_opener.assert_called_once_with("https://example.org")
+    mock_opener.open.assert_called_once_with("https://example.org")
 
 
 def test_register_open(mock_opener):
     webbrowser_open.register()
     webbrowser.open("https://example.org")
-    mock_opener.assert_called_once_with("https://example.org", 0, True)
+    mock_opener.open.assert_called_once_with("https://example.org", 0, True)
+
+
+def test_get(mock_opener):
+    other_opener = webbrowser.GenericBrowser("open")
+    webbrowser.register("other", None, other_opener)
+    assert webbrowser_open.get() is mock_opener
+    assert webbrowser_open.get("other") is other_opener
+    with pytest.raises(webbrowser.Error):
+        assert webbrowser_open.get("nosuch")
+
+
+def test_get_browser_env(mock_opener):
+    with mock.patch.dict(os.environ, {"BROWSER": "other"}):
+        browser = webbrowser_open.get()
+    assert browser is not mock_opener
+    assert browser.name == "other"
