@@ -54,15 +54,27 @@ def get_default_browser() -> str | None:
 
 def make_opener() -> BackgroundBrowser | None:
     browser = get_default_browser()
-    if browser is None:
-        return None
-    if shutil.which("gtk-launch"):
-        cmd = ["gtk-launch", browser, "%s"]
-    elif shutil.which("gio"):
-        browser = locate_desktop(browser)
-        if browser is None:
-            return None
-        cmd = ["gio", "launch", browser, "%s"]
+    cmd = None
+    xdg_desktop = os.getenv("XDG_CURRENT_DESKTOP", "").split(":")
+    if browser:
+        # gtk-launch launches .desktop by name
+        if shutil.which("gtk4-launch"):
+            cmd = ["gtk4-launch", browser, "%s"]
+        elif shutil.which("gtk-launch"):
+            cmd = ["gtk-launch", browser, "%s"]
+        # gio launch launches .desktop by absolute path
+        elif shutil.which("gio"):
+            browser = locate_desktop(browser)
+            if browser:
+                cmd = ["gio", "launch", browser, "%s"]
+
+    # KDE and XFCE don't need to know app name to launch browsers
+    if cmd is None and "KDE" in xdg_desktop and shutil.which("kioclient"):
+        cmd = ["kioclient", "exec", "%s", "x-scheme-handler/https"]
+    if cmd is None and "XFCE" in xdg_desktop and shutil.which("exo-open"):
+        cmd = ["exo-open", "--launch", "WebBrowser", "%s"]
+
+    if cmd:
+        return BackgroundBrowser(cmd)
     else:
         return None
-    return BackgroundBrowser(cmd)
