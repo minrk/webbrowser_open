@@ -57,12 +57,12 @@ def make_opener() -> BackgroundBrowser | None:
     if browser is None:
         return None
     if shutil.which("gtk-launch"):
-        cmd = ["gtk-launch", browser]
+        cmd = ["gtk-launch", browser, "%s"]
     elif shutil.which("gio"):
         browser = locate_desktop(browser)
         if browser is None:
             return None
-        cmd = ["gio", "launch", browser]
+        cmd = ["gio", "launch", browser, "%s"]
     else:
         return None
     return BackgroundBrowser(cmd)
