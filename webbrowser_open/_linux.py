@@ -41,7 +41,7 @@ def get_default_browser() -> str | None:
             ).strip()
         except (CalledProcessError, OSError):
             pass
-    if browser is None and shutil.which("xdg-mime"):
+    if not browser and shutil.which("xdg-mime"):
         try:
             browser = check_output(
                 ["xdg-mime", "query", "default", "x-scheme-handler/https"], text=True
@@ -49,7 +49,7 @@ def get_default_browser() -> str | None:
         except (CalledProcessError, OSError):
             pass
 
-    return browser
+    return browser or None
 
 
 def make_opener() -> BackgroundBrowser | None:
