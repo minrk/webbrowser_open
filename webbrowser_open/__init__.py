@@ -5,7 +5,7 @@ import platform
 import typing
 import webbrowser
 
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 __all__ = [
     "get",
     "get_default_browser",

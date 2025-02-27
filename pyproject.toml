@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "webbrowser_open"
-version = "0.2.1"
+version = "0.3.0"
 dynamic = ["readme"]
 description = "Prototype for stdlib webbrowser.open functionality"
 authors = [{ name = "Min RK", email = "benjaminrk@gmail.com" }]
@@ -79,7 +79,7 @@ extend-safe-fixes = ["FA"]
 github_url = "https://github.com/minrk/webbrowser_open"
 
 [tool.tbump.version]
-current = "0.2.1"
+current = "0.3.0"
 
 regex = '''
   (?P<major>\d+)
