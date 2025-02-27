@@ -7,6 +7,7 @@ import webbrowser
 
 __version__ = "0.2.1"
 __all__ = [
+    "get",
     "get_default_browser",
     "open",
     "register",
@@ -42,9 +43,20 @@ elif _system == "Linux":
         pass
 
 _opener: webbrowser.BaseBrowser | None = None
+_name: str = "webbrowser_open"
 
 
-def register(preferred: bool | None = None) -> webbrowser.BaseBrowser | None:
+def _make_opener() -> webbrowser.BaseBrowser | None:
+    """get the opener singleton"""
+    global _opener
+    if _opener is None and _backend is not None:
+        _opener = _backend.make_opener()
+    return _opener
+
+
+def register(
+    name: str = _name, *, preferred: bool | None = None
+) -> webbrowser.BaseBrowser | None:
     """Install the default-browser opener, if we find one
 
     Will set up as the preferred browser unless $BROWSER is set
@@ -56,23 +68,20 @@ def register(preferred: bool | None = None) -> webbrowser.BaseBrowser | None:
         # no backend found
         return None
 
-    global _opener
-    if _opener is None:
-        _opener = _backend.make_opener()
-
-    if _opener is None:
+    opener = _make_opener()
+    if opener is None:
         return None
 
     if preferred is None:
         # don't override $BROWSER by default
         preferred = not bool(os.environ.get("BROWSER"))
     webbrowser.register(
-        "system-default",
+        name,
         None,
-        instance=_opener,
+        instance=opener,
         preferred=preferred,
     )
-    return _opener
+    return opener
 
 
 def open(url: str) -> None:
@@ -81,14 +90,35 @@ def open(url: str) -> None:
         webbrowser.open(url)
         return
 
-    global _opener
-    if _opener is None:
-        _opener = _backend.make_opener()
-    if _opener:
-        _opener.open(url)
+    opener = _make_opener()
+    if opener:
+        opener.open(url)
     else:
         # no default found
         webbrowser.open(url)
+
+
+def get(using: str | None = None) -> webbrowser.BaseBrowser:
+    """Get an opener
+
+    Same as `webbrowser.open`
+
+    If a name is specified or $BROWSER is defined,
+    this is a passthrough to `webbrowser.get`.
+
+    If neither is specified, this package's default browser is returned if found,
+    falling back on `webbrowser.get()`.
+    """
+    if _backend is None or (using and using != _name) or os.environ.get("BROWSER"):
+        return webbrowser.get(using)
+
+    opener = _make_opener()
+
+    if opener:
+        return opener
+    else:
+        # fallback on default
+        return webbrowser.get()
 
 
 def get_default_browser() -> str | None:
